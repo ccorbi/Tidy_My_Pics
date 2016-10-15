@@ -13,9 +13,9 @@ def moveit(f, target):
     # Check if the folder exists, if not, it make it
 
     if not os.path.isdir(target):
-        print('Move {} to {}'.format(f, target))
         os.makedirs(target)
 
+    print('Move {} to {}'.format(f, target))
     shutil.move(f, target)
     return
 
@@ -23,9 +23,9 @@ def moveit(f, target):
 def copyit(f, target):
 
     if not os.path.isdir(target):
-        print('Copy {} to {}'.format(f, target))
         os.makedirs(target)
 
+    print('Copy {} to {}'.format(f, target))
     shutil.copy2(f, target)
     return
 
@@ -34,20 +34,18 @@ def copyit(f, target):
 
 def organize(messy_pictures, target_folder, default_folder):
 
-    if not os.path.isdir(target_folder):
-        os.mkdir(target_folder)
 
     # Feed featrues to org photos
     for mistery_photo in messy_pictures:
-
+        # get features to class, so far this only use shot date
         exif_data = get_EXIF_features(mistery_photo)
+
         if exif_data['year'] != None:
             # copy
             target_folder_file = '{0}/{1[year]}/{1[mouth]}/{1[day]}/'.format(
                 target_folder, exif_data)
-
         else:
-            # copy to miscellanian folder
+            # copy to default folder for manual class
             target_folder_file = '{}'.format(default_folder)
 
         copyit(mistery_photo, target_folder_file)
@@ -103,9 +101,6 @@ def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF')):
 
     for (dirpath, dirnames, filenames) in os.walk(source_path):
         for f in filenames:
-            print(f)
-            print(os.path.join(dirpath, f))
-
             if f.upper().endswith(common_extensions):
                 source_files.append(os.path.join(dirpath, f))
 
@@ -141,7 +136,7 @@ def get_options():
     # Advanced Setup & Optional Arguments
     # behaivour wiht no info, features, copy or move, duplicates
     parser.add_argument('-d', '--default_folder', action="store", dest="default_folder",
-                        default='demultiplex', help='Folder to store photos without \
+                        default='Unclassfied', help='Folder to store photos without \
                         valid information to properlly classify')
 
     parser.add_argument('-b', '--behaivour', action="store",
@@ -161,8 +156,9 @@ def main():
     opts = get_options()
 
     # Walk Source folder and detect pictures
-    messy_pictures = find_photos(opts.source_path)
+    messy_pictures = find_photos(opts.source_folder)
     # unmess the library
+    print('Found {} messy photos'.format(len(messy_pictures)))
     organize(messy_pictures, opts.target_folder, opts.default_folder)
 
 
