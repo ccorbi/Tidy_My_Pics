@@ -15,7 +15,7 @@ Tidy MyPics is a simple script to sort photos, so far  use  EXIF information to 
       --default_folder  Folder to store files without valid EXIF information
                         (by default: ./Unclassfied)
 
-´´´
+```
 
 ## Dependencies
 
