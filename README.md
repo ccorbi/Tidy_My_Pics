@@ -19,7 +19,7 @@ Tidy MyPics is a simple script to sort photos, so far  use  EXIF information to 
 
 ## Dependencies
 
-    - [EXIFread](exifread) Package to read Exif information
+    - [EXIFread](https://pypi.python.org/pypi/ExifRead) Package to read Exif information
 
 ## ToDO
 - Add option to chose to move or copy files
