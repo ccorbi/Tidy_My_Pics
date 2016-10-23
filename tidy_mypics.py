@@ -3,10 +3,11 @@ from __future__ import print_function
 import os
 import argparse
 import shutil
+
 import exifread
+from tqdm import tqdm
 
-
-def moveit(f, target):
+def moveit(f, target, verbose=False):
     """Get the name of the photo and the month that was taken and move it.
 
     """
@@ -14,46 +15,64 @@ def moveit(f, target):
 
     if not os.path.isdir(target):
         os.makedirs(target)
-
-    print('Move {} to {}'.format(f, target))
+    if verbose:
+        print('Move {} to {}'.format(f, target))
     shutil.move(f, target)
     return
 
 
-def copyit(f, target):
+def copyit(f, target, verbose=False):
 
     if not os.path.isdir(target):
         os.makedirs(target)
-
-    print('Copy {} to {}'.format(f, target))
+    if verbose:
+        print('Copy {} to {}'.format(f, target))
     shutil.copy2(f, target)
     return
 
 # It goes for each jpg in the run folder
 
+def mock_tqdm(*args, **kwargs):
+    if args:
+        return args[0]
+    return kwargs.get('iterable', None)
 
-def organize(messy_pictures, target_folder, default_folder):
+def tidyup(messy_pictures, target_folder, default_folder, **kargs):
 
+    # can i us a decorator for this?
+    # and for copy or move?
+    if kargs.get('verbose'):
+        verbose = True
+    else:
+        pbar = tqdm(total=len(messy_pictures))
+        verbose = False
 
     # Feed featrues to org photos
     for mistery_photo in messy_pictures:
         # get features to class, so far this only use shot date
-        exif_data = get_EXIF_features(mistery_photo)
+        exif_data = get_EXIF_features(mistery_photo, verbose)
 
         if exif_data['year'] != None:
-            # copy
+            # Set target folder to target/year/month/day/
             target_folder_file = '{0}/{1[year]}/{1[month]}/{1[day]}/'.format(
                 target_folder, exif_data)
         else:
-            # copy to default folder for manual class
+            # copy to default folder for further manual class
             target_folder_file = '{}'.format(default_folder)
 
-        copyit(mistery_photo, target_folder_file)
+        if verbose:
+            copyit(mistery_photo, target_folder_file, verbose)
+        else:
+            pbar.update(1)
+            copyit(mistery_photo, target_folder_file)
+
+    if not verbose:
+        pbar.close()
 
     return
 
 
-def get_EXIF_features(f, features='default'):
+def get_EXIF_features(f, features='default', verbose=False):
 
     exif_data = dict()
 
@@ -79,7 +98,9 @@ def get_EXIF_features(f, features='default'):
     except:
         # add log
         # configuration file default photos
-        print('error with {}'.format(f))
+        if verbose:
+            print('error with {}'.format(f))
+
         exif_data['year'] = None
 
     return exif_data
@@ -139,11 +160,14 @@ def get_options():
                         default='Unclassfied', help='Folder to store photos without \
                         valid information to properlly classify')
 
-    parser.add_argument('-b', '--behaivour', action="store",
-                        dest="files_method", default='copy', type=str,
-                        choices=['copy',
-                                 'move'],
-                        help='What do you want to do with the source photos')
+    parser.add_argument('-m', '--move', action="store_true",
+                        dest="move",
+                        help="By default %prog  just copy the source files to a new a tify"
+                        "folder struture, if you want to move it insted, activate this option")
+
+    parser.add_argument('-v', '--verbose', action="store_true",
+                        dest="verbose",
+                        help="Print details about what file %prog are moving or copying")
 
     options = parser.parse_args()
 
@@ -159,7 +183,7 @@ def main():
     messy_pictures = find_photos(opts.source_folder)
     # unmess the library
     print('Found {} messy photos'.format(len(messy_pictures)))
-    organize(messy_pictures, opts.target_folder, opts.default_folder)
+    tidyup(messy_pictures, **opts.__dict__)
 
 
 if __name__ == '__main__':
