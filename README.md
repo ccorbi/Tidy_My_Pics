@@ -11,7 +11,7 @@ Tidy MyPics is a simple script to sort photos, so far  use  EXIF information to 
 
     Options:
       -h --help         Show this screen.
-      --version         Show version.
+      -v --verbose      Show verbose output.
       --default_folder  Folder to store files without valid EXIF information
                         (by default: ./Unclassfied)
 
