@@ -3,9 +3,29 @@ from __future__ import print_function
 import os
 import argparse
 import shutil
-
+import hashlib
 import exifread
 from tqdm import tqdm
+
+
+def hashfile(path, blocksize = 65536):
+    """Hash a file.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+    afile = open(path, 'rb')
+    hasher = hashlib.md5()
+    buf = afile.read(blocksize)
+    while len(buf) > 0:
+        hasher.update(buf)
+        buf = afile.read(blocksize)
+    afile.close()
+    return hasher.hexdigest()
 
 def moveit(f, target, verbose=False):
     """Get the name of the photo and the month that was taken and move it.
