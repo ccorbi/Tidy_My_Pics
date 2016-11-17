@@ -126,7 +126,7 @@ def get_EXIF_features(f, features='default', verbose=False):
     return exif_data
 
 
-def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF')):
+def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW'), ignore = []):
     """Walk the source folder and select potential photos by extension.
 
     Parameters
@@ -175,6 +175,7 @@ def get_options():
                         the tidy collection of photos', required=True)
 
     # Advanced Setup & Optional Arguments
+    # ignore multiple and ignore-file
     # behaivour wiht no info, features, copy or move, duplicates
     parser.add_argument('-d', '--default_folder', action="store", dest="default_folder",
                         default='Unclassfied', help='Folder to store photos without \
