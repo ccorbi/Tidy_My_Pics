@@ -4,11 +4,13 @@ import os
 import argparse
 import shutil
 import hashlib
+
 import exifread
 from tqdm import tqdm
+# from multiprocessing import Pool, Value
 
 
-def hashfile(path, blocksize = 65536):
+def hashfile(path, blocksize=65536):
     """Hash a file.
 
     Parameters
@@ -27,35 +29,39 @@ def hashfile(path, blocksize = 65536):
     afile.close()
     return hasher.hexdigest()
 
-def moveit(f, target, verbose=False):
-    """Get the name of the photo and the month that was taken and move it.
 
-    """
-    # Check if the folder exists, if not, it make it
+def place_photo(path_info, target, verbose=False, how=shutil.copy2):
 
     if not os.path.isdir(target):
         os.makedirs(target)
+
+    f = os.path.join(path_info[0], path_info[1])
+
+    if os.path.isfile(os.path.join(target, path_info[1])):
+        # is a duplicate? if yes, skip
+        hash_dest = hashfile(os.path.join(target, path_info[1]))
+        hash_source = hashfile(f)
+        if hash_dest== hash_source:
+            return
+        else:
+            pass
+        # no change name file
+
     if verbose:
-        print('Move {} to {}'.format(f, target))
-    shutil.move(f, target)
-    return
-
-
-def copyit(f, target, verbose=False):
-
-    if not os.path.isdir(target):
-        os.makedirs(target)
-    if verbose:
-        print('Copy {} to {}'.format(f, target))
-    shutil.copy2(f, target)
+        print('{} -> {}'.format(f, target))
+    #shutil.move
+    #shutil.copy2(f, target)
+    how(f, target)
     return
 
 # It goes for each jpg in the run folder
+
 
 def mock_tqdm(*args, **kwargs):
     if args:
         return args[0]
     return kwargs.get('iterable', None)
+
 
 def tidyup(messy_pictures, target_folder, default_folder, **kargs):
 
@@ -72,19 +78,19 @@ def tidyup(messy_pictures, target_folder, default_folder, **kargs):
         # get features to class, so far this only use shot date
         exif_data = get_EXIF_features(mistery_photo, verbose)
 
-        if exif_data['year'] != None:
+        if exif_data['year'] is not None:
             # Set target folder to target/year/month/day/
             target_folder_file = '{0}/{1[year]}/{1[month]}/{1[day]}/'.format(
                 target_folder, exif_data)
         else:
-            # copy to default folder for further manual class
-            target_folder_file = '{}'.format(default_folder)
+            # copy to default folder
+            target_folder_file = '{}/{}'.format(default_folder, mistery_photo[0])
 
         if verbose:
-            copyit(mistery_photo, target_folder_file, verbose)
+            place_photo(mistery_photo, target_folder_file, verbose)
         else:
             pbar.update(1)
-            copyit(mistery_photo, target_folder_file)
+            place_photo(mistery_photo, target_folder_file)
 
     if not verbose:
         pbar.close()
@@ -92,10 +98,11 @@ def tidyup(messy_pictures, target_folder, default_folder, **kargs):
     return
 
 
-def get_EXIF_features(f, features='default', verbose=False):
+def get_EXIF_features(path_info, features='default', verbose=False):
 
     exif_data = dict()
 
+    f = os.path.join(path_info[0], path_info[1])
     # open in binary mode
     photo = open(f, 'rb')
     # Read  EXIF data
@@ -126,7 +133,7 @@ def get_EXIF_features(f, features='default', verbose=False):
     return exif_data
 
 
-def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW'), ignore = []):
+def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW'), ignore=[]):
     """Walk the source folder and select potential photos by extension.
 
     Parameters
@@ -138,12 +145,18 @@ def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW'), ign
     -------
 
     """
+    # combinedignored = re.compile('|'.join('(?:{0})'.format(x) for x in ignore))
+    # use endswith , ignore must be a tuple then
+    # if ignore and dirpath.endswith(ignore):
+    # for duplication, at the end cll the same funciton
+
     source_files = list()
 
     for (dirpath, dirnames, filenames) in os.walk(source_path):
         for f in filenames:
             if f.upper().endswith(common_extensions):
-                source_files.append(os.path.join(dirpath, f))
+                # source_files.append(os.path.join(dirpath, f))
+                source_files.append([dirpath, f])
 
     return source_files
 
@@ -177,6 +190,9 @@ def get_options():
     # Advanced Setup & Optional Arguments
     # ignore multiple and ignore-file
     # behaivour wiht no info, features, copy or move, duplicates
+    parser.add_argument('-i', '--ignore_folder', action="store", dest="folders to ignore",
+                            help='List of folders to ignore', nargs='+')
+
     parser.add_argument('-d', '--default_folder', action="store", dest="default_folder",
                         default='Unclassfied', help='Folder to store photos without \
                         valid information to properlly classify')
