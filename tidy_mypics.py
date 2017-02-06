@@ -4,11 +4,42 @@ import os
 import argparse
 import shutil
 import hashlib
+import string
+import random
+
 
 import exifread
 from tqdm import tqdm
 # from multiprocessing import Pool, Value
 
+def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    """Random string generator.
+
+    from: http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+def rename_dupl_photo(loc_file_info):
+
+    extension = os.path.splitext(loc_file_info[1])[1]
+    dupid = '.' + id_generator() + extension
+
+    new_name = loc_file_info[1].replace(extension, dupid)
+
+    # just in case, check if there is a collision
+    f = os.path.join(loc_file_info[0], new_name)
+    if os.path.isfile(f):
+        new_name = rename_dupl_photo(loc_file_info)
+
+    return new_name
 
 def hashfile(path, blocksize=65536):
     """Hash a file.
@@ -30,22 +61,24 @@ def hashfile(path, blocksize=65536):
     return hasher.hexdigest()
 
 
-def place_photo(path_info, target, verbose=False, how=shutil.copy2):
+def place_photo_in(loc_file_info, target, verbose=False, how=shutil.copy2):
 
     if not os.path.isdir(target):
         os.makedirs(target)
 
-    f = os.path.join(path_info[0], path_info[1])
+    f = os.path.join(loc_file_info[0], loc_file_info[1])
 
-    if os.path.isfile(os.path.join(target, path_info[1])):
+    if os.path.isfile(os.path.join(target, loc_file_info[1])):
         # is a duplicate? if yes, skip
-        hash_dest = hashfile(os.path.join(target, path_info[1]))
+        hash_dest = hashfile(os.path.join(target, loc_file_info[1]))
         hash_source = hashfile(f)
         if hash_dest== hash_source:
             return
         else:
+            # change name
+            loc_file_info[1] = rename_dupl_photo(loc_file_info)
             pass
-        # no change name file
+
 
     if verbose:
         print('{} -> {}'.format(f, target))
@@ -87,10 +120,10 @@ def tidyup(messy_pictures, target_folder, default_folder, **kargs):
             target_folder_file = '{}/{}'.format(default_folder, mistery_photo[0])
 
         if verbose:
-            place_photo(mistery_photo, target_folder_file, verbose)
+            place_photo_in(mistery_photo, target_folder_file, verbose)
         else:
             pbar.update(1)
-            place_photo(mistery_photo, target_folder_file)
+            place_photo_in(mistery_photo, target_folder_file)
 
     if not verbose:
         pbar.close()
@@ -98,11 +131,11 @@ def tidyup(messy_pictures, target_folder, default_folder, **kargs):
     return
 
 
-def get_EXIF_features(path_info, features='default', verbose=False):
+def get_EXIF_features(loc_file_info, features='default', verbose=False):
 
     exif_data = dict()
 
-    f = os.path.join(path_info[0], path_info[1])
+    f = os.path.join(loc_file_info[0], loc_file_info[1])
     # open in binary mode
     photo = open(f, 'rb')
     # Read  EXIF data
