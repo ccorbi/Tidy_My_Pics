@@ -61,7 +61,7 @@ def hashfile(path, blocksize=65536):
     return hasher.hexdigest()
 
 
-def place_photo_in(loc_file_info, target, verbose=False, how=shutil.copy2):
+def place_photo_in(loc_file_info, target, verbose=False, how='copy'):
 
     if not os.path.isdir(target):
         os.makedirs(target)
@@ -82,9 +82,13 @@ def place_photo_in(loc_file_info, target, verbose=False, how=shutil.copy2):
 
     if verbose:
         print('{} -> {}'.format(f, target))
-    #shutil.move
-    #shutil.copy2(f, target)
-    how(f, target)
+
+    if how=='move':
+        mover =  shutil.move
+    else:
+        mover =  shutil.copy2
+
+    mover(f, target)
     return
 
 # It goes for each jpg in the run folder
@@ -96,7 +100,7 @@ def mock_tqdm(*args, **kwargs):
     return kwargs.get('iterable', None)
 
 
-def tidyup(messy_pictures, target_folder, default_folder, **kargs):
+def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
 
     # can i us a decorator for this?
     # and for copy or move?
@@ -116,14 +120,14 @@ def tidyup(messy_pictures, target_folder, default_folder, **kargs):
             target_folder_file = '{0}/{1[year]}/{1[month]}/{1[day]}/'.format(
                 target_folder, exif_data)
         else:
-            # copy to default folder
-            target_folder_file = '{}/{}'.format(default_folder, mistery_photo[0])
+            # copy to unclassfied folder
+            target_folder_file = '{}/{}'.format(hodgepodge, mistery_photo[0])
 
         if verbose:
-            place_photo_in(mistery_photo, target_folder_file, verbose)
+            place_photo_in(mistery_photo, target_folder_file, verbose=True, **kargs)
         else:
             pbar.update(1)
-            place_photo_in(mistery_photo, target_folder_file)
+            place_photo_in(mistery_photo, target_folder_file, **kargs)
 
     if not verbose:
         pbar.close()
@@ -166,7 +170,7 @@ def get_EXIF_features(loc_file_info, features='default', verbose=False):
     return exif_data
 
 
-def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW'), ignore=[]):
+def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW', 'TIFF'), ignore=[]):
     """Walk the source folder and select potential photos by extension.
 
     Parameters
@@ -226,14 +230,15 @@ def get_options():
     parser.add_argument('-i', '--ignore_folder', action="store", dest="folders to ignore",
                             help='List of folders to ignore', nargs='+')
 
-    parser.add_argument('-d', '--default_folder', action="store", dest="default_folder",
+    parser.add_argument('-u', '--unclassfied', action="store", dest="hodgepodge",
                         default='Unclassfied', help='Folder to store photos without \
                         valid information to properlly classify')
 
-    parser.add_argument('-m', '--move', action="store_true",
-                        dest="move",
-                        help="By default %prog  just copy the source files to a new a tify"
-                        "folder struture, if you want to move it insted, activate this option")
+    parser.add_argument('-m', '--how-move', action="store",
+                        dest="how", choices=['move', 'copy'], default='dump',
+                        help="By default %prog  just copy the source files to a new location"
+                        "using a timestamp folder struture. if you want to move it insted, "
+                        "use copy argument")
 
     parser.add_argument('-v', '--verbose', action="store_true",
                         dest="verbose",
