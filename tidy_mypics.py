@@ -10,7 +10,7 @@ import random
 
 import exifread
 from tqdm import tqdm
-# from multiprocessing import Pool, Value
+#from multiprocessing import Pool, Value
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     """Random string generator.
@@ -61,7 +61,7 @@ def hashfile(path, blocksize=65536):
     return hasher.hexdigest()
 
 
-def place_photo_in(loc_file_info, target, verbose=False, how='copy'):
+def place_photo_in(loc_file_info, target, verbose=False, how='copy', **kargs):
 
     if not os.path.isdir(target):
         os.makedirs(target)
@@ -117,7 +117,7 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
 
         if exif_data['year'] is not None:
             # Set target folder to target/year/month/day/
-            target_folder_file = '{0}/{1[year]}/{1[month]}/{1[day]}/'.format(
+            target_folder_file = '{0}/{1[year]}/{1[year]}-{1[month]}/{1[year]}-{1[month]}-{1[day]}/'.format(
                 target_folder, exif_data)
         else:
             # copy to unclassfied folder
