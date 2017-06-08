@@ -12,6 +12,7 @@ import exifread
 from tqdm import tqdm
 #from multiprocessing import Pool, Value
 
+
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     """Random string generator.
 
@@ -92,7 +93,11 @@ def place_photo_in(loc_file_info, target, verbose=False, how='copy', **kargs):
     return
 
 # It goes for each jpg in the run folder
+def folder_format(folder_path):
 
+    
+
+    return
 
 def mock_tqdm(*args, **kwargs):
     if args:
@@ -121,10 +126,10 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
                 target_folder, exif_data)
         else:
             # copy to unclassfied folder
-            target_folder_file = '{}/{}'.format(hodgepodge, mistery_photo[0])
+            target_folder_file = '{}/{}/{}'.format(target_folder,hodgepodge, mistery_photo[0])
 
         if verbose:
-            place_photo_in(mistery_photo, target_folder_file, verbose=True, **kargs)
+            place_photo_in(mistery_photo, target_folder_file, **kargs)
         else:
             pbar.update(1)
             place_photo_in(mistery_photo, target_folder_file, **kargs)
