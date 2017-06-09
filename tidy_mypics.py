@@ -16,7 +16,29 @@ from tqdm import tqdm
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     """Random string generator.
 
-    from: http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python
+    Original code from:
+    http://stackoverflow.com/questions/2257441/random-string-generation-with-upper-case-letters-and-digits-in-python
+
+    Parameters
+    ----------
+
+    size : int
+        size of the random string
+
+    chars : array_type
+        bag of chars to randomly sample
+
+    Returns
+    -------
+    str
+    a string made from random selection of chars
+
+    """
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+def rename_dupl_photo(loc_file_info):
+    """
 
     Parameters
     ----------
@@ -25,10 +47,6 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     -------
 
     """
-    return ''.join(random.choice(chars) for _ in range(size))
-
-
-def rename_dupl_photo(loc_file_info):
 
     extension = os.path.splitext(loc_file_info[1])[1]
     dupid = '.' + id_generator() + extension
@@ -63,7 +81,15 @@ def hashfile(path, blocksize=65536):
 
 
 def place_photo_in(loc_file_info, target, verbose=False, how='copy', **kargs):
+    """
 
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     if not os.path.isdir(target):
         os.makedirs(target)
 
@@ -94,19 +120,52 @@ def place_photo_in(loc_file_info, target, verbose=False, how='copy', **kargs):
 
 # It goes for each jpg in the run folder
 def folder_format(folder_path):
+    """
 
-    
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
+
 
     return
 
 def mock_tqdm(*args, **kwargs):
+    """
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    """
     if args:
         return args[0]
     return kwargs.get('iterable', None)
 
 
 def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
+    """
 
+    Parameters
+    ----------
+    messy_pictures : array_type
+        list with file address
+
+    target_folder : str
+        Main folder to move/copy the files in the data format folders
+
+    hodgepodge : str
+        Main folder to move/copy photos missing  EXIF information
+
+    Returns
+    -------
+
+    """
     # can i us a decorator for this?
     # and for copy or move?
     if kargs.get('verbose'):
@@ -141,7 +200,18 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
 
 
 def get_EXIF_features(loc_file_info, features='default', verbose=False):
+    """ Extract EXIF info from the photo
 
+    Parameters
+    ----------
+    loc_file_info : str
+        path of the target file
+
+    Returns
+    -------
+    dictionary
+
+    """
     exif_data = dict()
 
     f = os.path.join(loc_file_info[0], loc_file_info[1])
