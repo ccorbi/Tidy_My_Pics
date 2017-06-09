@@ -48,13 +48,13 @@ def rename_dupl_photo(mistery_photo):
 
     """
 
-    extension = os.path.splitext(mistery_photo[1])[1]
-    dupid = '.' + id_generator() + '.' + extension
+    extension = os.path.splitext(mistery_photo['filename'])[1]
+    dupid = '.' + id_generator() + extension # .jpg
 
-    new_name = mistery_photo[1].replace(extension, dupid)
+    new_name = mistery_photo['filename'].replace(extension, dupid)
 
     # just in case, check if there is a collision
-    f = os.path.join(mistery_photo[0], new_name)
+    f = os.path.join(mistery_photo['dir'], new_name)
     if os.path.isfile(f):
         new_name = rename_dupl_photo(mistery_photo)
 
@@ -93,17 +93,17 @@ def place_photo_in(mistery_photo, target, verbose=False, how='copy', **kargs):
     if not os.path.isdir(target):
         os.makedirs(target)
 
-    f = os.path.join(mistery_photo[0], mistery_photo[1])
+    f = os.path.join(mistery_photo['dir'], mistery_photo['filename'])
 
-    if os.path.isfile(os.path.join(target, mistery_photo[1])):
+    if os.path.isfile(os.path.join(target, mistery_photo['filename'])):
         # is a duplicate? if yes, skip
-        hash_dest = hashfile(os.path.join(target, mistery_photo[1]))
+        hash_dest = hashfile(os.path.join(target, mistery_photo['filename']))
         hash_source = hashfile(f)
         if hash_dest== hash_source:
             return
         else:
             # change name
-            mistery_photo[1] = rename_dupl_photo(mistery_photo)
+            mistery_photo['filename'] = rename_dupl_photo(mistery_photo)
             pass
 
 
@@ -154,7 +154,7 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
     Parameters
     ----------
     messy_pictures : array_type
-        list with file address
+        list with file path and name info
 
     target_folder : str
         Main folder to move/copy the files in the data format folders
@@ -185,7 +185,7 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
                 target_folder, exif_data)
         else:
             # copy to unclassfied folder
-            target_folder_file = '{}/{}/{}'.format(target_folder,hodgepodge, mistery_photo[0])
+            target_folder_file = '{}/{}/{}'.format(target_folder, hodgepodge, mistery_photo['dir'])
 
         if verbose:
             place_photo_in(mistery_photo, target_folder_file, **kargs)
@@ -214,7 +214,7 @@ def get_EXIF_features(mistery_photo, features='default', verbose=False):
     """
     exif_data = dict()
 
-    f = os.path.join(mistery_photo[0], mistery_photo[1])
+    f = os.path.join(mistery_photo['dir'], mistery_photo['filename'])
     # open in binary mode
     photo = open(f, 'rb')
     # Read  EXIF data
@@ -268,7 +268,10 @@ def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW', 'TIF
         for f in filenames:
             if f.upper().endswith(common_extensions):
                 # source_files.append(os.path.join(dirpath, f))
-                source_files.append([dirpath, f])
+                parent = os.path.basename(os.path.normpath(dirpath))
+                source_files.append({'dir':dirpath,
+                                     'filename':f
+                                     'parent_folder':parent})
 
     return source_files
 
