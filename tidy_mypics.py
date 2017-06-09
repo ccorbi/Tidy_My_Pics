@@ -37,7 +37,7 @@ def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def rename_dupl_photo(loc_file_info):
+def rename_dupl_photo(mistery_photo):
     """
 
     Parameters
@@ -48,15 +48,15 @@ def rename_dupl_photo(loc_file_info):
 
     """
 
-    extension = os.path.splitext(loc_file_info[1])[1]
-    dupid = '.' + id_generator() + extension
+    extension = os.path.splitext(mistery_photo[1])[1]
+    dupid = '.' + id_generator() + '.' + extension
 
-    new_name = loc_file_info[1].replace(extension, dupid)
+    new_name = mistery_photo[1].replace(extension, dupid)
 
     # just in case, check if there is a collision
-    f = os.path.join(loc_file_info[0], new_name)
+    f = os.path.join(mistery_photo[0], new_name)
     if os.path.isfile(f):
-        new_name = rename_dupl_photo(loc_file_info)
+        new_name = rename_dupl_photo(mistery_photo)
 
     return new_name
 
@@ -80,7 +80,7 @@ def hashfile(path, blocksize=65536):
     return hasher.hexdigest()
 
 
-def place_photo_in(loc_file_info, target, verbose=False, how='copy', **kargs):
+def place_photo_in(mistery_photo, target, verbose=False, how='copy', **kargs):
     """
 
     Parameters
@@ -93,17 +93,17 @@ def place_photo_in(loc_file_info, target, verbose=False, how='copy', **kargs):
     if not os.path.isdir(target):
         os.makedirs(target)
 
-    f = os.path.join(loc_file_info[0], loc_file_info[1])
+    f = os.path.join(mistery_photo[0], mistery_photo[1])
 
-    if os.path.isfile(os.path.join(target, loc_file_info[1])):
+    if os.path.isfile(os.path.join(target, mistery_photo[1])):
         # is a duplicate? if yes, skip
-        hash_dest = hashfile(os.path.join(target, loc_file_info[1]))
+        hash_dest = hashfile(os.path.join(target, mistery_photo[1]))
         hash_source = hashfile(f)
         if hash_dest== hash_source:
             return
         else:
             # change name
-            loc_file_info[1] = rename_dupl_photo(loc_file_info)
+            mistery_photo[1] = rename_dupl_photo(mistery_photo)
             pass
 
 
@@ -199,12 +199,12 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
     return
 
 
-def get_EXIF_features(loc_file_info, features='default', verbose=False):
+def get_EXIF_features(mistery_photo, features='default', verbose=False):
     """ Extract EXIF info from the photo
 
     Parameters
     ----------
-    loc_file_info : str
+    mistery_photo : str
         path of the target file
 
     Returns
@@ -214,7 +214,7 @@ def get_EXIF_features(loc_file_info, features='default', verbose=False):
     """
     exif_data = dict()
 
-    f = os.path.join(loc_file_info[0], loc_file_info[1])
+    f = os.path.join(mistery_photo[0], mistery_photo[1])
     # open in binary mode
     photo = open(f, 'rb')
     # Read  EXIF data
