@@ -111,7 +111,7 @@ def place_photo_in(mistery_photo, target, mover, verbose=False):
     return
 
 # It goes for each jpg in the run folder
-def folder_format(folder_path):
+def folder_format(exif_data, mistery_photo, target_folder, hodgepodge):
     """
 
     Parameters
@@ -121,9 +121,16 @@ def folder_format(folder_path):
     -------
 
     """
+    if exif_data['year'] is not None:
+        # Set target folder to target/year/month/day/
+        target_folder_file = '{0}/{1[year]}/{1[year]}-{1[month]}/{1[year]}-{1[month]}-{1[day]}/'.format(
+            target_folder, exif_data)
+    else:
+        # copy to unclassfied folder
+        target_folder_file = '{}/{}/{}'.format(target_folder, hodgepodge, mistery_photo['dir'])
 
 
-    return
+    return target_folder_file
 
 def mock_tqdm(*args, **kwargs):
     """
@@ -176,15 +183,11 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
     for mistery_photo in messy_pictures:
         # get features to class, so far this only use shot date
         exif_data = get_EXIF_features(mistery_photo, verbose)
-
-        if exif_data['year'] is not None:
-            # Set target folder to target/year/month/day/
-            target_folder_file = '{0}/{1[year]}/{1[year]}-{1[month]}/{1[year]}-{1[month]}-{1[day]}/'.format(
-                target_folder, exif_data)
-        else:
-            # copy to unclassfied folder
-            target_folder_file = '{}/{}/{}'.format(target_folder, hodgepodge, mistery_photo['dir'])
-
+        # write a tidy folder
+        target_folder_file = folder_format(exif_data,
+                                           mistery_photo,
+                                           target_folder,
+                                           hodgepodge)
         # user feedback
         if verbose:
             print('{} -> {}'.format(f, target))
