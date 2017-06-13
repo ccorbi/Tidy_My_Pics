@@ -6,6 +6,7 @@ import shutil
 import hashlib
 import string
 import random
+import re
 
 
 import exifread
@@ -126,11 +127,18 @@ def folder_format(exif_data, mistery_photo, target_folder, hodgepodge):
         target_folder_file = '{0}/{1[year]}/{1[year]}-{1[month]}/{1[year]}-{1[month]}-{1[day]}/'.format(
             target_folder, exif_data)
     else:
-        # copy to unclassfied folder
+        # copy to unclassified folder
         target_folder_file = '{}/{}/{}'.format(target_folder, hodgepodge, mistery_photo['dir'])
 
 
     return target_folder_file
+
+
+def guess_if_date(parent):
+
+
+    return
+
 
 def mock_tqdm(*args, **kwargs):
     """
@@ -293,8 +301,8 @@ def get_options():
     parser = argparse.ArgumentParser(description="""
     Simple tool to unmess your photos.
 
-    Usage Demultiplexation:
-    %prog --source /my/messy/photos/ --target /my/tidy/photos/
+    Usage:
+    tidy_mypics --source /my/messy/photos/ --target /my/tidy/photos/
 
     """)
 
@@ -312,19 +320,19 @@ def get_options():
     parser.add_argument('-i', '--ignore_folder', action="store", dest="folders to ignore",
                             help='List of folders to ignore', nargs='+')
 
-    parser.add_argument('-u', '--unclassfied', action="store", dest="hodgepodge",
-                        default='Unclassfied', help='Folder to store photos without \
-                        valid information to properlly classify')
+    parser.add_argument('-u', '--unclassified', action="store", dest="hodgepodge",
+                        default='unclassified', help='Folder to store photos without \
+                        valid information to properly classify')
 
     parser.add_argument('-m', '--how-move', action="store",
-                        dest="how", choices=['move', 'copy'], default='dump',
-                        help="By default %prog  just copy the source files to a new location"
-                        "using a timestamp folder struture. if you want to move it insted, "
+                        dest="how", choices=['move', 'copy'], default='copy',
+                        help="By default tidy_mypics  just copy the source files to a new location"
+                        "using a timestamp folder structure. if you want to move it instead, "
                         "use copy argument")
 
     parser.add_argument('-v', '--verbose', action="store_true",
                         dest="verbose",
-                        help="Print details about what file %prog are moving or copying")
+                        help="Print details about what file tidy_mypics are moving or copying")
 
     options = parser.parse_args()
 
