@@ -1,12 +1,13 @@
 
+## Description
 
 Tidy MyPics is a small and simple script to sort photos base on EXIF information. This script will put picture files (JPG, TIFF CR2, etc) in a  folder structure base on date /year/month/day/.
 
 ## Usage
 
-```bash
+```
 
-Usage:
+ Usage:
   tidy_mypics.py --source /my/messy/files --target /my/tidy/space
 
 
@@ -26,13 +27,13 @@ Usage:
                         want to move it instead, use copy argument
   -v, --verbose         Print details about what file tidy_mypics are moving
                         or copying
-
-
 ```
 
+
 ## Dependencies
-    - python 2.7
-    - [EXIFread](https://pypi.python.org/pypi/ExifRead) Package to read Exif information
+
+  - python 2.7
+  - [EXIFread](https://pypi.python.org/pypi/ExifRead) Package to read Exif information
 
 ## ToDO
 - Extract alternative information from file date creation?
