@@ -1,6 +1,6 @@
-# README
 
-Tidy MyPics is a simple script to sort my wife photos base on EXIF information to put files in a date format folder structure /year/month/day/
+
+Tidy MyPics is a small and simple script to sort photos base on EXIF information. This script will put picture files (JPG, TIFF CR2, etc) in a  folder structure base on date /year/month/day/.
 
 ## Usage
 
