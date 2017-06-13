@@ -80,7 +80,7 @@ def hashfile(path, blocksize=65536):
     return hasher.hexdigest()
 
 
-def place_photo_in(mistery_photo, target, verbose=False, how='copy', **kargs):
+def place_photo_in(mistery_photo, target, mover, verbose=False):
     """
 
     Parameters
@@ -96,26 +96,18 @@ def place_photo_in(mistery_photo, target, verbose=False, how='copy', **kargs):
     f = os.path.join(mistery_photo['dir'], mistery_photo['filename'])
 
     if os.path.isfile(os.path.join(target, mistery_photo['filename'])):
-        # is a duplicate? if yes, skip
+        # is a duplicate? if yes, skip it
         hash_dest = hashfile(os.path.join(target, mistery_photo['filename']))
         hash_source = hashfile(f)
-        if hash_dest== hash_source:
+        if hash_dest == hash_source:
             return
         else:
-            # change name
+            # if not change name
             mistery_photo['filename'] = rename_dupl_photo(mistery_photo)
-            pass
+            target += mistery_photo['filename']
 
+    mover(f, target )
 
-    if verbose:
-        print('{} -> {}'.format(f, target))
-
-    if how=='move':
-        mover =  shutil.move
-    else:
-        mover =  shutil.copy2
-
-    mover(f, target)
     return
 
 # It goes for each jpg in the run folder
@@ -174,7 +166,13 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
         pbar = tqdm(total=len(messy_pictures))
         verbose = False
 
-    # Feed featrues to org photos
+    # select action .. thinking to refactor to a class
+    if kargs.get('how') == 'move':
+        mover =  shutil.move
+    else:
+        mover =  shutil.copy2
+
+    # Loop over items and get features to organize photos
     for mistery_photo in messy_pictures:
         # get features to class, so far this only use shot date
         exif_data = get_EXIF_features(mistery_photo, verbose)
@@ -187,11 +185,14 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
             # copy to unclassfied folder
             target_folder_file = '{}/{}/{}'.format(target_folder, hodgepodge, mistery_photo['dir'])
 
+        # user feedback
         if verbose:
-            place_photo_in(mistery_photo, target_folder_file, **kargs)
+            print('{} -> {}'.format(f, target))
         else:
             pbar.update(1)
-            place_photo_in(mistery_photo, target_folder_file, **kargs)
+        # action
+        place_photo_in(mistery_photo, target_folder_file, mover, verbose=verbose)
+
 
     if not verbose:
         pbar.close()
@@ -270,7 +271,7 @@ def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW', 'TIF
                 # source_files.append(os.path.join(dirpath, f))
                 parent = os.path.basename(os.path.normpath(dirpath))
                 source_files.append({'dir':dirpath,
-                                     'filename':f
+                                     'filename':f,
                                      'parent_folder':parent})
 
     return source_files
