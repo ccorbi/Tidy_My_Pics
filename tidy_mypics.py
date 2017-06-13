@@ -124,20 +124,28 @@ def folder_format(exif_data, mistery_photo, target_folder, hodgepodge):
     """
     if exif_data['year'] is not None:
         # Set target folder to target/year/month/day/
-        target_folder_file = '{0}/{1[year]}/{1[year]}-{1[month]}/{1[year]}-{1[month]}-{1[day]}/'.format(
-            target_folder, exif_data)
+        # keep information of the folder, usefull to quick identification of events
+        event = strip_date_info(mistery_photo['parent_folder'])
+
+        target_folder_file = '{0}/{1[year]}/{1[year]}-{1[month]}/{1[year]}-{1[month]}-{1[day]}_{2}/'.format(
+            target_folder, exif_data, event)
     else:
         # copy to unclassified folder
+        # do not touch folder name
         target_folder_file = '{}/{}/{}'.format(target_folder, hodgepodge, mistery_photo['dir'])
 
 
     return target_folder_file
 
 
-def guess_if_date(parent):
+def strip_date_info(parent):
+    # these are the date format date I would like to remove
+    for date_pattern in [r'[a-z]{3} \d+, \d+', r'\d+-\d+-\d+', r'\d+-\d+', r'\d{4}']:
+        match = re.search(date_pattern, parent)
+        if match:
+            return parent[:match.start()] + parent[match.end():]
 
-
-    return
+    return parent
 
 
 def mock_tqdm(*args, **kwargs):
