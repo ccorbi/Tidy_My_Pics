@@ -36,6 +36,7 @@ Tidy MyPics is a small and simple script to sort photos base on EXIF information
   - [EXIFread](https://pypi.python.org/pypi/ExifRead) Package to read Exif information
 
 ## ToDO
+- refactor to object oriented
 - Extract alternative information from file date creation?
 - add option to name folders base on Localization (using GPS info)
 - Add control of duplicates, check potential collisions scenarios
