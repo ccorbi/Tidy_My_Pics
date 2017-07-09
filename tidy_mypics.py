@@ -140,12 +140,18 @@ def folder_format(exif_data, mistery_photo, target_folder, hodgepodge):
 
 def strip_date_info(parent):
     # these are the date format date I would like to remove
-    for date_pattern in [r'[a-z]{3} \d+, \d+', r'\d+-\d+-\d+', r'\d+-\d+', r'\d{4}']:
+    # tailored for my and my wifes folders
+    # customize this for you own mess
+    for date_pattern in [r'[A-Z][a-z]{2} \d+, \d+', r'\d+-\d+-\d+', r'\d+-\d+']:
         match = re.search(date_pattern, parent)
         if match:
-            return parent[:match.start()] + parent[match.end():]
+            parent = parent[:match.start()] + parent[match.end():]
 
-    return parent
+        if parent:
+            return parent.lower()
+        else:
+            return 'anna'
+
 
 
 def mock_tqdm(*args, **kwargs):
@@ -206,7 +212,9 @@ def tidyup(messy_pictures, target_folder, hodgepodge, **kargs):
                                            hodgepodge)
         # user feedback
         if verbose:
-            print('{} -> {}'.format(f, target))
+            print('{}\n{} -> {}'.format(mistery_photo['filename'],
+                                        mistery_photo['dir'],
+                                        target_folder_file))
         else:
             pbar.update(1)
         # action
@@ -265,7 +273,7 @@ def get_EXIF_features(mistery_photo, features='default', verbose=False):
     return exif_data
 
 
-def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW', 'TIFF'), ignore=[]):
+def find_photos(source_path, common_extensions=('JPG', 'CR2', 'ORF', 'ARW', 'TIFF', 'DNG'), ignore=[]):
     """Walk the source folder and select potential photos by extension.
 
     Parameters
